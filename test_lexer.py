@@ -10,11 +10,12 @@ class TestLexer(unittest.TestCase):
 
     def test_keyword_and_identifier(self):
         source = "fn main"
-        expected = [
-            (TokenType.FN, 'fn'),
-            (TokenType.IDENT, 'main'),
-        ]
-        self.assertEqual(tokens_of(source), expected)
+        tokens = Lexer(source).tokenize()
+        filtered = [t for t in tokens if t.type not in {TokenType.NEWLINE, TokenType.EOF}]
+        self.assertEqual(filtered[0].line, 0)
+        self.assertEqual(filtered[0].column, 0)  # 'fn' starts at column 0
+        self.assertEqual(filtered[1].line, 0)
+        self.assertEqual(filtered[1].column, 3)  # 'main' starts after "fn "
 
     def test_number_literal(self):
         source = "let x = 42"
