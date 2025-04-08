@@ -30,9 +30,15 @@ class Parser:
     def parse_stmt(self):
         tok = self.peek()
         if tok.type == TokenType.LET:
-            return self.parse_let()
+            stmt = self.parse_let()
         else:
             raise SyntaxError(f"Unexpected token: {tok.type} at line {tok.line + 1}")
+
+        # Skip trailing NEWLINE (optional, for single-line forms)
+        if self.peek().type == TokenType.NEWLINE:
+            self.advance()
+
+        return stmt
 
     def parse_let(self):
         self.expect(TokenType.LET)
