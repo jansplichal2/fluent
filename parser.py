@@ -1,4 +1,4 @@
-from fluent_ast import LetStmt, Number, String, Var, Binary
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
@@ -31,6 +31,10 @@ class Parser:
     def parse(self):
         stmts = []
         while self.peek().type != TokenType.EOF:
+            # Skip over empty lines
+            if self.peek().type == TokenType.NEWLINE:
+                self.advance()
+                continue
             stmts.append(self.parse_stmt())
         return stmts
 
@@ -38,8 +42,12 @@ class Parser:
         tok = self.peek()
         if tok.type == TokenType.LET:
             stmt = self.parse_let()
+        elif tok.type == TokenType.FN:
+            stmt = self.parse_fn_decl()
         else:
-            raise SyntaxError(f"Unexpected token: {tok.type} at line {tok.line + 1}")
+            # Fallback: treat it as an expression statement
+            expr = self.parse_expr()
+            stmt = ExprStmt(expr=expr)
 
         # Skip trailing NEWLINE (optional, for single-line forms)
         if self.peek().type == TokenType.NEWLINE:
@@ -101,6 +109,43 @@ class Parser:
     def parse_var(self):
         tok = self.expect(TokenType.IDENT)
         return Var(name=tok.value)
+
+    def parse_fn_decl(self):
+        self.expect(TokenType.FN)
+        name_tok = self.expect(TokenType.IDENT)
+        self.expect(TokenType.LPAREN)
+        params = []
+
+        if self.peek().type != TokenType.RPAREN:
+            params.append(self.parse_param())
+            while self.peek().type == TokenType.COMMA:
+                self.advance()
+                params.append(self.parse_param())
+
+        self.expect(TokenType.RPAREN)
+
+        return_type = None
+        if self.peek().type == TokenType.ARROW:
+            self.advance()
+            return_type = self.expect(TokenType.IDENT).value
+
+        # Parse block
+        self.expect(TokenType.NEWLINE)
+        self.expect(TokenType.INDENT)
+
+        body = []
+        while self.peek().type not in (TokenType.DEDENT, TokenType.EOF):
+            stmt = self.parse_stmt()
+            body.append(stmt)
+        self.expect(TokenType.DEDENT)
+
+        return FnDecl(name=name_tok.value, params=params, return_type=return_type, body=body)
+
+    def parse_param(self):
+        name_tok = self.expect(TokenType.IDENT)
+        self.expect(TokenType.COLON)
+        type_tok = self.expect(TokenType.IDENT)
+        return FnParam(name=name_tok.value, type_annotation=type_tok.value)
 
 
 if __name__ == '__main__':
