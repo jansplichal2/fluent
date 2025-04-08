@@ -56,7 +56,13 @@ class Parser:
 
     def parse_atom(self):
         tok = self.peek()
-        if tok.type == TokenType.NUMBER:
+
+        if tok.type == TokenType.LPAREN:
+            self.advance()
+            expr = self.parse_expr()
+            self.expect(TokenType.RPAREN)
+            return expr
+        elif tok.type == TokenType.NUMBER:
             return self.parse_number()
         elif tok.type == TokenType.STRING:
             return self.parse_string()
@@ -103,3 +109,6 @@ if __name__ == '__main__':
     ast = parser.parse()
     for stmt in ast:
         print(stmt)
+
+    parser = Parser('5 + 6 + 7 + 8 * 9')
+    print(parser.parse_expr())

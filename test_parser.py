@@ -66,6 +66,13 @@ class TestParser(unittest.TestCase):
         self.assertIsInstance(expr.left, Var)
         self.assertIsInstance(expr.right, Number)
 
+    def test_binary_with_parentheses(self):
+        ast = self.parse("let x = 1 * (2 + 3)")
+        expr = ast[0].value
+        self.assertEqual(expr.op, "*")
+        self.assertIsInstance(expr.right, Binary)
+        self.assertEqual(expr.right.op, "+")
+
 
 if __name__ == "__main__":
     unittest.main()
