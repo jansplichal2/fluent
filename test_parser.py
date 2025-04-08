@@ -1,6 +1,6 @@
 import unittest
 from parser import Parser
-from fluent_ast import LetStmt, Number, String
+from fluent_ast import LetStmt, Number, String, Var, Binary
 
 
 class TestParser(unittest.TestCase):
@@ -43,6 +43,28 @@ class TestParser(unittest.TestCase):
         self.assertEqual(stmt.name, "name")
         self.assertIsInstance(stmt.value, String)
         self.assertEqual(stmt.value.value, "Jan")
+
+    def test_let_binary_add(self):
+        ast = self.parse("let x = 1 + 2")
+        expr = ast[0].value
+        self.assertIsInstance(expr, Binary)
+        self.assertEqual(expr.op, "+")
+        self.assertIsInstance(expr.left, Number)
+        self.assertIsInstance(expr.right, Number)
+
+    def test_binary_precedence(self):
+        ast = self.parse("let x = 1 + 2 * 3")
+        expr = ast[0].value
+        self.assertIsInstance(expr, Binary)
+        self.assertEqual(expr.op, "+")
+        self.assertIsInstance(expr.right, Binary)
+        self.assertEqual(expr.right.op, "*")
+
+    def test_binary_with_var(self):
+        ast = self.parse("let x = y * 10")
+        expr = ast[0].value
+        self.assertIsInstance(expr.left, Var)
+        self.assertIsInstance(expr.right, Number)
 
 
 if __name__ == "__main__":

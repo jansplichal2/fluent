@@ -1,5 +1,12 @@
-from fluent_ast import LetStmt, Number, String, Var
+from fluent_ast import LetStmt, Number, String, Var, Binary
 from lexer import Lexer, TokenType, Token
+
+PRECEDENCE = {
+    "+": 1,
+    "-": 1,
+    "*": 2,
+    "/": 2,
+}
 
 
 class Parser:
@@ -47,7 +54,7 @@ class Parser:
         value = self.parse_expr()
         return LetStmt(name=name_tok.value, type_annotation=None, value=value)
 
-    def parse_expr(self):
+    def parse_atom(self):
         tok = self.peek()
         if tok.type == TokenType.NUMBER:
             return self.parse_number()
@@ -57,6 +64,25 @@ class Parser:
             return self.parse_var()
         else:
             raise SyntaxError(f"Unsupported expression starting with {tok.type}")
+
+    def parse_expr(self, min_precedence=0):
+        left = self.parse_atom()
+
+        while True:
+            tok = self.peek()
+            if tok.type in (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH):
+                op = tok.value
+                precedence = PRECEDENCE[op]
+                if precedence < min_precedence:
+                    break
+
+                self.advance()
+                right = self.parse_expr(precedence + 1)
+                left = Binary(left=left, op=op, right=right)
+            else:
+                break
+
+        return left
 
     def parse_number(self):
         tok = self.expect(TokenType.NUMBER)
