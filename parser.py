@@ -1,4 +1,4 @@
-from fluent_ast import LetStmt, Number
+from fluent_ast import LetStmt, Number, String, Var
 from lexer import Lexer, TokenType, Token
 
 
@@ -51,12 +51,24 @@ class Parser:
         tok = self.peek()
         if tok.type == TokenType.NUMBER:
             return self.parse_number()
+        elif tok.type == TokenType.STRING:
+            return self.parse_string()
+        elif tok.type == TokenType.IDENT:
+            return self.parse_var()
         else:
             raise SyntaxError(f"Unsupported expression starting with {tok.type}")
 
     def parse_number(self):
         tok = self.expect(TokenType.NUMBER)
         return Number(value=int(tok.value))
+
+    def parse_string(self):
+        tok = self.expect(TokenType.STRING)
+        return String(value=tok.value)
+
+    def parse_var(self):
+        tok = self.expect(TokenType.IDENT)
+        return Var(name=tok.value)
 
 
 if __name__ == '__main__':
