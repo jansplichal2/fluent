@@ -40,6 +40,13 @@ class TokenType(Enum):
     LBRACK = auto()
     RBRACK = auto()
 
+    GT = auto()  # >
+    LT = auto()  # <
+    GTE = auto()  # >=
+    LTE = auto()  # <=
+    EQ = auto()  # ==
+    NEQ = auto()  # !=
+
 
 @dataclass
 class Token:
@@ -173,6 +180,24 @@ class Lexer:
                 pos += 1
             elif text[pos] in ' \t':
                 pos += 1  # skip extra whitespace
+            elif text.startswith(">=", pos):
+                self.tokens.append(Token(TokenType.GTE, ">=", self.line_num, current_col))
+                pos += 2
+            elif text.startswith("<=", pos):
+                self.tokens.append(Token(TokenType.LTE, "<=", self.line_num, current_col))
+                pos += 2
+            elif text.startswith(">", pos):
+                self.tokens.append(Token(TokenType.GT, ">", self.line_num, current_col))
+                pos += 1
+            elif text.startswith("<", pos):
+                self.tokens.append(Token(TokenType.LT, "<", self.line_num, current_col))
+                pos += 1
+            elif text.startswith("==", pos):
+                self.tokens.append(Token(TokenType.EQ, "==", self.line_num, current_col))
+                pos += 2
+            elif text.startswith("!=", pos):
+                self.tokens.append(Token(TokenType.NEQ, "!=", self.line_num, current_col))
+                pos += 2
             else:
                 raise SyntaxError(f"Unexpected character '{text[pos]}' at line {self.line_num + 1}, column {current_col}")
 

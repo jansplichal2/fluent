@@ -1,6 +1,6 @@
 import unittest
 from parser import Parser
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call, IfExpr
 
 
 class TestParser(unittest.TestCase):
@@ -148,6 +148,46 @@ fn oops(x: Int
     def test_call_on_non_var_errors(self):
         with self.assertRaises(SyntaxError):
             self.parse('(1 + 2)(3)')
+
+    def test_if_expression(self):
+        src = '''
+let result = if x > 0
+  "positive"
+else
+  "non-positive"
+'''
+        ast = self.parse(src)
+        stmt = ast[0]
+        self.assertIsInstance(stmt.value, IfExpr)
+        self.assertIsInstance(stmt.value.condition, Binary)
+        self.assertEqual(len(stmt.value.then_branch), 1)
+        self.assertIsInstance(stmt.value.then_branch[0].expr, String)
+        self.assertEqual(stmt.value.then_branch[0].expr.value, "positive")
+
+    def test_if_without_else(self):
+        src = '''
+let result = if ok
+  "yes"
+'''
+        stmt = self.parse(src)[0]
+        if_expr = stmt.value
+        self.assertIsInstance(if_expr, IfExpr)
+        self.assertIsNotNone(if_expr.then_branch)
+        self.assertIsNone(if_expr.else_branch)
+
+    def test_nested_else_if(self):
+        src = '''
+let result = if x > 0
+  "positive"
+else
+  if x < 0
+    "negative"
+  else
+    "zero"
+'''
+        stmt = self.parse(src)[0]
+        if_expr = stmt.value
+        self.assertIsInstance(if_expr.else_branch[0].expr, IfExpr)
 
 
 if __name__ == "__main__":

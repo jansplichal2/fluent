@@ -1,7 +1,13 @@
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call, IfExpr
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
+    "==": 0,
+    "!=": 0,
+    ">":  0,
+    "<":  0,
+    ">=": 0,
+    "<=": 0,
     "+": 1,
     "-": 1,
     "*": 2,
@@ -38,6 +44,33 @@ class Parser:
             stmts.append(self.parse_stmt())
         return stmts
 
+    def parse_if_expr(self):
+        self.expect(TokenType.IF)
+        condition = self.parse_expr()
+
+        self.expect(TokenType.NEWLINE)
+        self.expect(TokenType.INDENT)
+
+        then_branch = []
+        while self.peek().type not in (TokenType.DEDENT, TokenType.EOF):
+            then_branch.append(self.parse_stmt())
+
+        self.expect(TokenType.DEDENT)
+
+        # Parse optional else
+        else_branch = None
+        if self.peek().type == TokenType.ELSE:
+            self.advance()
+            self.expect(TokenType.NEWLINE)
+            self.expect(TokenType.INDENT)
+
+            else_branch = []
+            while self.peek().type not in (TokenType.DEDENT, TokenType.EOF):
+                else_branch.append(self.parse_stmt())
+            self.expect(TokenType.DEDENT)
+
+        return IfExpr(condition=condition, then_branch=then_branch, else_branch=else_branch)
+
     def parse_stmt(self):
         tok = self.peek()
         if tok.type == TokenType.LET:
@@ -65,7 +98,9 @@ class Parser:
     def parse_atom(self):
         tok = self.peek()
 
-        if tok.type == TokenType.LPAREN:
+        if tok.type == TokenType.IF:
+            return self.parse_if_expr()
+        elif tok.type == TokenType.LPAREN:
             self.advance()
             expr = self.parse_expr()
             self.expect(TokenType.RPAREN)
@@ -101,13 +136,24 @@ class Parser:
                     raise SyntaxError(f"Cannot call non-variable expression at line {tok.line + 1}")
                 continue
 
-            # Binary operator
-            if tok.type in (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH):
-                op = tok.value
+            binary_ops = {
+                TokenType.PLUS: "+",
+                TokenType.MINUS: "-",
+                TokenType.STAR: "*",
+                TokenType.SLASH: "/",
+                TokenType.GT: ">",
+                TokenType.LT: "<",
+                TokenType.GTE: ">=",
+                TokenType.LTE: "<=",
+                TokenType.EQ: "==",
+                TokenType.NEQ: "!=",
+            }
+
+            if tok.type in binary_ops:
+                op = binary_ops[tok.type]
                 precedence = PRECEDENCE[op]
                 if precedence < min_precedence:
                     break
-
                 self.advance()
                 right = self.parse_expr(precedence + 1)
                 left = Binary(left=left, op=op, right=right)
