@@ -1,6 +1,6 @@
 import unittest
 from parser import Parser
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call
 
 
 class TestParser(unittest.TestCase):
@@ -116,6 +116,38 @@ fn oops(x: Int
 '''
         with self.assertRaises(SyntaxError):
             self.parse(src)
+
+    def test_simple_function_call(self):
+        ast = self.parse('let x = greet("Jan")')
+        stmt = ast[0]
+        call = stmt.value
+        self.assertIsInstance(call, Call)
+        self.assertEqual(call.func, "greet")
+        self.assertEqual(len(call.args), 1)
+        self.assertIsInstance(call.args[0], String)
+        self.assertEqual(call.args[0].value, "Jan")
+
+    def test_nested_function_call(self):
+        ast = self.parse('let x = log(to_string(42))')
+        call = ast[0].value
+        self.assertIsInstance(call, Call)
+        self.assertEqual(call.func, "log")
+        inner = call.args[0]
+        self.assertIsInstance(inner, Call)
+        self.assertEqual(inner.func, "to_string")
+        self.assertEqual(inner.args[0].value, 42)
+
+    def test_function_call_with_expr_arg(self):
+        ast = self.parse('let x = add(1 + 2, y)')
+        call = ast[0].value
+        self.assertIsInstance(call, Call)
+        self.assertEqual(len(call.args), 2)
+        self.assertIsInstance(call.args[0], Binary)
+        self.assertIsInstance(call.args[1], Var)
+
+    def test_call_on_non_var_errors(self):
+        with self.assertRaises(SyntaxError):
+            self.parse('(1 + 2)(3)')
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
@@ -84,6 +84,24 @@ class Parser:
 
         while True:
             tok = self.peek()
+
+            # Function call (e.g. foo(1, 2))
+            if tok.type == TokenType.LPAREN:
+                self.advance()
+                args = []
+                if self.peek().type != TokenType.RPAREN:
+                    args.append(self.parse_expr())
+                    while self.peek().type == TokenType.COMMA:
+                        self.advance()
+                        args.append(self.parse_expr())
+                self.expect(TokenType.RPAREN)
+                if isinstance(left, Var):
+                    left = Call(func=left.name, args=args)
+                else:
+                    raise SyntaxError(f"Cannot call non-variable expression at line {tok.line + 1}")
+                continue
+
+            # Binary operator
             if tok.type in (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH):
                 op = tok.value
                 precedence = PRECEDENCE[op]
