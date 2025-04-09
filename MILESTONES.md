@@ -41,13 +41,26 @@ This document tracks completed work as we build the Fluent programming language 
   - Indented body as block
 - Unit tests added for all of the above
 
+### ✅ Parser (continued)
+- Parses function calls: `foo(1 + 2)`
+- Handles call chaining and nested expressions
+- Parses `if` expressions with optional `else` branches
+- Supports nested `if` (as `else if`) using recursion
+- Parses `match` expressions with:
+  - Literal patterns (`1`, `"x"`)
+  - Variable patterns (`x`)
+  - Wildcard patterns (`_`)
+- Unit tests added for all of the above
+- Comparison operators added and integrated: `>`, `<`, `==`, `!=`, etc.
+
 ---
 
 ## 🧭 Next Steps
-- Parse function calls (e.g. `greet("Jan")`)
-- Parse `match` expressions
-- Parse `if` expressions
-- Parse block-level control flow
-- Start interpreting expressions
+- Parse block-level control flow in nested expressions
+- Begin interpretation: evaluate AST nodes
+- Implement environments and scoping
+- Evaluate function application and match branches
+- Add type checking phase
+- Begin REPL and CLI tooling
 
 ---
