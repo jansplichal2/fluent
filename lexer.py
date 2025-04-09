@@ -47,6 +47,9 @@ class TokenType(Enum):
     EQ = auto()  # ==
     NEQ = auto()  # !=
 
+    UNDERSCORE = auto()  # _
+
+
 
 @dataclass
 class Token:
@@ -120,7 +123,10 @@ class Lexer:
         pos = 0
         while pos < len(text):
             current_col = start_column + pos
-            if m := re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', text[pos:]):
+            if text.startswith("_", pos) and (pos + 1 == len(text) or not text[pos + 1].isalnum()):
+                self.tokens.append(Token(TokenType.UNDERSCORE, "_", self.line_num, current_col))
+                pos += 1
+            elif m := re.match(r'[a-zA-Z_][a-zA-Z0-9_]*', text[pos:]):
                 word = m.group(0)
                 tok_type = self.KEYWORDS.get(word, TokenType.IDENT)
                 self.tokens.append(Token(tok_type, word, self.line_num, current_col))

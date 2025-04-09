@@ -1,6 +1,6 @@
 import unittest
 from parser import Parser
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call, IfExpr
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call, IfExpr, MatchExpr, MatchCase
 
 
 class TestParser(unittest.TestCase):
@@ -188,6 +188,35 @@ else
         stmt = self.parse(src)[0]
         if_expr = stmt.value
         self.assertIsInstance(if_expr.else_branch[0].expr, IfExpr)
+
+    def test_match_with_literals(self):
+        src = '''
+let label = match x
+  1 => "one"
+  2 => "two"
+  _ => "other"
+'''
+        ast = self.parse(src)
+        match_expr = ast[0].value
+        self.assertIsInstance(match_expr, MatchExpr)
+        self.assertEqual(len(match_expr.cases), 3)
+
+        self.assertEqual(match_expr.cases[0].pattern, 1)
+        self.assertEqual(match_expr.cases[1].pattern, 2)
+        self.assertEqual(match_expr.cases[2].pattern, "_")
+        self.assertEqual(match_expr.cases[2].expr.value, "other")
+
+    def test_match_with_variable_pattern(self):
+        src = '''
+let result = match input
+  x => x
+  _ => "default"
+'''
+        ast = self.parse(src)
+        m = ast[0].value
+        self.assertIsInstance(m.cases[0].pattern, str)
+        self.assertEqual(m.cases[0].pattern, "x")
+        self.assertEqual(m.cases[1].pattern, "_")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call, IfExpr
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call, IfExpr, MatchExpr, MatchCase
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
@@ -98,7 +98,9 @@ class Parser:
     def parse_atom(self):
         tok = self.peek()
 
-        if tok.type == TokenType.IF:
+        if tok.type == TokenType.MATCH:
+            return self.parse_match_expr()
+        elif tok.type == TokenType.IF:
             return self.parse_if_expr()
         elif tok.type == TokenType.LPAREN:
             self.advance()
@@ -161,6 +163,36 @@ class Parser:
                 break
 
         return left
+
+    def parse_match_expr(self):
+        self.expect(TokenType.MATCH)
+        matched_expr = self.parse_expr()
+
+        self.expect(TokenType.NEWLINE)
+        self.expect(TokenType.INDENT)
+
+        cases = []
+        while self.peek().type not in (TokenType.DEDENT, TokenType.EOF):
+            pattern_tok = self.advance()
+
+            if pattern_tok.type == TokenType.UNDERSCORE:
+                pattern = "_"
+            elif pattern_tok.type == TokenType.NUMBER:
+                pattern = int(pattern_tok.value)
+            elif pattern_tok.type == TokenType.IDENT:
+                pattern = pattern_tok.value
+            else:
+                raise SyntaxError(f"Invalid match pattern: {pattern_tok.type} on line {pattern_tok.line + 1}")
+
+            self.expect(TokenType.FAT_ARROW)
+            expr = self.parse_expr()
+            if self.peek().type == TokenType.NEWLINE:
+                self.advance()
+
+            cases.append(MatchCase(pattern=pattern, expr=expr))
+
+        self.expect(TokenType.DEDENT)
+        return MatchExpr(matched_expr=matched_expr, cases=cases)
 
     def parse_number(self):
         tok = self.expect(TokenType.NUMBER)
