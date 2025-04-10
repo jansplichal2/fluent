@@ -186,6 +186,10 @@ class Lexer:
                 pos += 1
             elif text[pos] in ' \t':
                 pos += 1  # skip extra whitespace
+            elif text.startswith(">>>", pos):
+                raise SyntaxError(f"Unexpected operator '>>>' at line {self.line_num + 1}, column {current_col}")
+            elif text.startswith(">>", pos):
+                raise SyntaxError(f"Unexpected operator '>>' at line {self.line_num + 1}, column {current_col}")
             elif text.startswith(">=", pos):
                 self.tokens.append(Token(TokenType.GTE, ">=", self.line_num, current_col))
                 pos += 2

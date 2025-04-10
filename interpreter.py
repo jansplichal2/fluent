@@ -51,6 +51,18 @@ class Interpreter:
             left = self.eval_expr(expr.left, env)
             right = self.eval_expr(expr.right, env)
             return self.apply_op(expr.op, left, right)
+        elif isinstance(expr, IfExpr):
+            cond = self.eval_expr(expr.condition, env)
+            if not isinstance(cond, bool):
+                raise TypeError(f"If condition must be a boolean, got: {type(cond).__name__}")
+            branch = expr.then_branch if cond else expr.else_branch
+            if branch is None:
+                return None
+            local_env = Environment(parent=env)
+            result = None
+            for stmt in branch:
+                result = self.eval_stmt(stmt, local_env)
+            return result
         else:
             raise NotImplementedError(f"Unsupported expression: {type(expr)}")
 
