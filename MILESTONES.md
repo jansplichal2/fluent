@@ -53,14 +53,28 @@ This document tracks completed work as we build the Fluent programming language 
 - Unit tests added for all of the above
 - Comparison operators added and integrated: `>`, `<`, `==`, `!=`, etc.
 
+### ✅ Interpreter (initial)
+- Environment model with parent scopes
+- Evaluates:
+  - `let` bindings and variable references
+  - `ExprStmt`, `Binary`, `Var`, `Number`, `String`
+  - Function calls (stub-ready)
+  - `if` expressions with strict boolean enforcement
+  - `match` expressions with:
+    - Literal patterns
+    - Wildcard (`_`) patterns
+    - Embedded expressions (e.g. `if` in match arms)
+- Pretty printer for visualizing AST structure
+- Full test coverage for all interpreter functionality
+
 ---
 
 ## 🧭 Next Steps
-- Parse block-level control flow in nested expressions
-- Begin interpretation: evaluate AST nodes
-- Implement environments and scoping
-- Evaluate function application and match branches
-- Add type checking phase
-- Begin REPL and CLI tooling
+- Implement user-defined function evaluation
+- Add built-in functions (e.g. print, length)
+- Expand type annotations (Bool, custom types)
+- Implement type checking phase
+- Build REPL and CLI tooling
+- Start packaging and LSP integration
 
 ---

@@ -63,8 +63,20 @@ class Interpreter:
             for stmt in branch:
                 result = self.eval_stmt(stmt, local_env)
             return result
-        else:
-            raise NotImplementedError(f"Unsupported expression: {type(expr)}")
+        elif isinstance(expr, MatchExpr):
+            value = self.eval_expr(expr.matched_expr, env)
+            for case in expr.cases:
+                if case.pattern == "_":
+                    matched = True
+                elif isinstance(case.pattern, int) or isinstance(case.pattern, str):
+                    matched = value == case.pattern
+                elif isinstance(case.pattern, str):
+                    matched = env.get(case.pattern) == value
+                else:
+                    matched = False
+                if matched:
+                    return self.eval_expr(case.expr, env)
+            raise ValueError(f"No match found for value: {value}")
 
     def apply_op(self, op: str, left, right):
         if op == "+":
