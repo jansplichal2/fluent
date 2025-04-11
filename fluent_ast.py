@@ -93,3 +93,8 @@ class FnDecl(Stmt):
 @dataclass
 class ExprStmt(Stmt):
     expr: Expr
+
+
+@dataclass
+class Return(Stmt):
+    expr: Expr

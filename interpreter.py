@@ -1,6 +1,6 @@
 from fluent_ast import (
     Number, String, Binary, Var, LetStmt, ExprStmt, FnDecl,
-    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase
+    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return
 )
 
 
@@ -18,6 +18,11 @@ class Environment:
 
     def set(self, name, value):
         self.values[name] = value
+
+
+class ReturnException(Exception):
+    def __init__(self, value):
+        self.value = value
 
 
 class BuiltInFunction:
@@ -59,6 +64,9 @@ class Interpreter:
             return stmt
         elif isinstance(stmt, ExprStmt):
             return self.eval_expr(stmt.expr, env)
+        elif isinstance(stmt, Return):
+            value = self.eval_expr(stmt.expr, env)
+            raise ReturnException(value)
         else:
             raise NotImplementedError(f"Unsupported statement: {type(stmt)}")
 
@@ -103,15 +111,18 @@ class Interpreter:
             fn = env.get(expr.func)
             args = [self.eval_expr(arg, env) for arg in expr.args]
             if isinstance(fn, FnDecl):
-                if len(args) != len(fn.params):
-                    raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(args)}")
                 local_env = Environment(parent=env)
+                if len(expr.args) != len(fn.params):
+                    raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(expr.args)}")
                 for param, arg in zip(fn.params, args):
                     local_env.set(param.name, arg)
-                result = None
-                for stmt in fn.body:
-                    result = self.eval_stmt(stmt, local_env)
-                return result
+                try:
+                    result = None
+                    for stmt in fn.body:
+                        result = self.eval_stmt(stmt, local_env)
+                    return result
+                except ReturnException as re:
+                    return re.value
             elif isinstance(fn, BuiltInFunction):
                 return fn.call(args)
             else:
