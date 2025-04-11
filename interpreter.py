@@ -20,15 +20,28 @@ class Environment:
         self.values[name] = value
 
 
+class BuiltInFunction:
+    def __init__(self, name, impl):
+        self.name = name
+        self.impl = impl
+
+    def call(self, args):
+        return self.impl(*args)
+
+
 class Interpreter:
     def __init__(self):
         self.global_env = Environment()
+        self._register_builtins()
 
     def eval_program(self, stmts: list[Stmt]):
         result = None
         for stmt in stmts:
             result = self.eval_stmt(stmt, self.global_env)
         return result
+
+    def _register_builtins(self):
+        self.global_env.set("print", BuiltInFunction("print", lambda *args: print(*args) or None))
 
     def eval_stmt(self, stmt: Stmt, env: Environment):
         if isinstance(stmt, LetStmt):
@@ -82,17 +95,21 @@ class Interpreter:
             raise ValueError(f"No match found for value: {value}")
         elif isinstance(expr, Call):
             fn = env.get(expr.func)
-            if not isinstance(fn, FnDecl):
+            args = [self.eval_expr(arg, env) for arg in expr.args]
+            if isinstance(fn, FnDecl):
+                if len(args) != len(fn.params):
+                    raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(args)}")
+                local_env = Environment(parent=env)
+                for param, arg in zip(fn.params, args):
+                    local_env.set(param.name, arg)
+                result = None
+                for stmt in fn.body:
+                    result = self.eval_stmt(stmt, local_env)
+                return result
+            elif isinstance(fn, BuiltInFunction):
+                return fn.call(args)
+            else:
                 raise TypeError(f"'{expr.func}' is not a function")
-            if len(expr.args) != len(fn.params):
-                raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(expr.args)}")
-            local_env = Environment(parent=env)
-            for param, arg in zip(fn.params, expr.args):
-                local_env.set(param.name, self.eval_expr(arg, env))
-            result = None
-            for stmt in fn.body:
-                result = self.eval_stmt(stmt, local_env)
-            return result
         else:
             raise NotImplementedError(f"Unsupported expression: {type(expr)}")
 

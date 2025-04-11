@@ -55,6 +55,15 @@ This document tracks completed work as we build the Fluent programming language 
 
 ---
 
+
+### ✅ Interpreter (built-in functions)
+- Added support for built-in functions
+  - New `BuiltInFunction` wrapper class
+  - Registered `print(...)` as a built-in
+- Interpreter can now evaluate calls to built-in functions
+- Print evaluated directly to stdout, returns `None`
+- Full test coverage confirming built-in dispatch and behavior
+
 ## 🧭 Next Steps
 - Add built-in functions (e.g. `print`, `length`)
 - Support explicit return values from functions
