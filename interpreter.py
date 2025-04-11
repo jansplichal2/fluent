@@ -35,6 +35,9 @@ class Interpreter:
             value = self.eval_expr(stmt.value, env)
             env.set(stmt.name, value)
             return value
+        elif isinstance(stmt, FnDecl):
+            env.set(stmt.name, stmt)
+            return stmt
         elif isinstance(stmt, ExprStmt):
             return self.eval_expr(stmt.expr, env)
         else:
@@ -77,6 +80,21 @@ class Interpreter:
                 if matched:
                     return self.eval_expr(case.expr, env)
             raise ValueError(f"No match found for value: {value}")
+        elif isinstance(expr, Call):
+            fn = env.get(expr.func)
+            if not isinstance(fn, FnDecl):
+                raise TypeError(f"'{expr.func}' is not a function")
+            if len(expr.args) != len(fn.params):
+                raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(expr.args)}")
+            local_env = Environment(parent=env)
+            for param, arg in zip(fn.params, expr.args):
+                local_env.set(param.name, self.eval_expr(arg, env))
+            result = None
+            for stmt in fn.body:
+                result = self.eval_stmt(stmt, local_env)
+            return result
+        else:
+            raise NotImplementedError(f"Unsupported expression: {type(expr)}")
 
     def apply_op(self, op: str, left, right):
         if op == "+":
