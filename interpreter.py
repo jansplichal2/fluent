@@ -42,6 +42,12 @@ class Interpreter:
 
     def _register_builtins(self):
         self.global_env.set("print", BuiltInFunction("print", lambda *args: print(*args) or None))
+        self.global_env.set("len", BuiltInFunction("len", self._len_builtin))
+
+    def _len_builtin(self, value):
+        if isinstance(value, (str, list)):
+            return len(value)
+        raise TypeError(f"len() expects a string or list, got {type(value).__name__}")
 
     def eval_stmt(self, stmt: Stmt, env: Environment):
         if isinstance(stmt, LetStmt):
