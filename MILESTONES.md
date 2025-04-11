@@ -28,53 +28,39 @@ This document tracks completed work as we build the Fluent programming language 
 - Core AST nodes defined in `fluent_ast.py`
 - Covers: LetStmt, FnDecl, ExprStmt, Binary, Var, Number, String, MatchExpr, etc.
 
-### ✅ Parser (partial)
-- Parses `let` bindings
-- Parses integer and string literals
-- Handles variable references
-- Parses binary expressions with precedence (`+`, `*`, etc.)
-- Supports parentheses for grouping
-- Supports expression statements
-- Parses function declarations with:
-  - Positional typed parameters
-  - Optional return type
-  - Indented body as block
-- Unit tests added for all of the above
+### ✅ Parser
+- Parses let bindings, literals, binary expressions, calls
+- Parses function declarations, if/else, match expressions
+- Supports precedence, nesting, and indentation blocks
+- Unit tests cover edge cases and malformed syntax
 
-### ✅ Parser (continued)
-- Parses function calls: `foo(1 + 2)`
-- Handles call chaining and nested expressions
-- Parses `if` expressions with optional `else` branches
-- Supports nested `if` (as `else if`) using recursion
-- Parses `match` expressions with:
-  - Literal patterns (`1`, `"x"`)
-  - Variable patterns (`x`)
-  - Wildcard patterns (`_`)
-- Unit tests added for all of the above
-- Comparison operators added and integrated: `>`, `<`, `==`, `!=`, etc.
-
-### ✅ Interpreter (initial)
+### ✅ Interpreter (core)
 - Environment model with parent scopes
 - Evaluates:
-  - `let` bindings and variable references
-  - `ExprStmt`, `Binary`, `Var`, `Number`, `String`
-  - Function calls (stub-ready)
-  - `if` expressions with strict boolean enforcement
-  - `match` expressions with:
-    - Literal patterns
-    - Wildcard (`_`) patterns
-    - Embedded expressions (e.g. `if` in match arms)
+  - let bindings and variable references
+  - Binary, Var, Number, String
+  - if expressions with strict boolean enforcement
+  - match expressions with wildcard and if branches
 - Pretty printer for visualizing AST structure
-- Full test coverage for all interpreter functionality
+
+### ✅ Interpreter (functions)
+- Evaluates user-defined functions:
+  - Supports FnDecl, parameter binding, and local scoping
+  - Evaluates arguments and executes body in isolated environment
+  - Returns final expression value
+- Handles error cases:
+  - Calling undefined functions
+  - Incorrect argument count
+- Full test coverage for function evaluation
 
 ---
 
 ## 🧭 Next Steps
-- Implement user-defined function evaluation
-- Add built-in functions (e.g. print, length)
-- Expand type annotations (Bool, custom types)
-- Implement type checking phase
-- Build REPL and CLI tooling
-- Start packaging and LSP integration
+- Add built-in functions (e.g. `print`, `length`)
+- Support explicit return values from functions
+- Add Boolean literals and logic operators (`and`, `or`, `not`)
+- Implement type annotations and basic type checking
+- Build REPL and CLI runner
+- Begin packaging and LSP/editor support
 
 ---
