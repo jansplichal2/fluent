@@ -108,3 +108,22 @@ class Boolean(Expr):
 @dataclass
 class ListLiteral(Expr):
     elements: list
+
+
+@dataclass
+class IndexExpr(Expr):
+    target: Expr
+    index: Expr
+
+
+@dataclass
+class SimpleType:
+    name: str
+
+
+@dataclass
+class ListType:
+    element_type: 'Type'
+
+
+Type = Union[SimpleType, ListType]

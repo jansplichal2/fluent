@@ -86,11 +86,11 @@ class TestLexer(unittest.TestCase):
             (TokenType.LET, 'let'),
             (TokenType.IDENT, 'xs'),
             (TokenType.ASSIGN, '='),
-            (TokenType.LBRACK, '['),
+            (TokenType.LBRACKET, '['),
             (TokenType.NUMBER, '0'),
             (TokenType.RANGE, '..'),
             (TokenType.NUMBER, '10'),
-            (TokenType.RBRACK, ']'),
+            (TokenType.RBRACKET, ']'),
         ]
         self.assertEqual(tokens_of(source), expected)
 

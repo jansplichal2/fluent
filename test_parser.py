@@ -1,6 +1,6 @@
 import unittest
 from parser import Parser
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call, IfExpr, MatchExpr, MatchCase
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Call, IfExpr, MatchExpr, MatchCase, SimpleType
 
 
 class TestParser(unittest.TestCase):
@@ -86,7 +86,7 @@ fn greet(name: String)
         self.assertEqual(fn.name, "greet")
         self.assertEqual(len(fn.params), 1)
         self.assertEqual(fn.params[0].name, "name")
-        self.assertEqual(fn.params[0].type_annotation, "String")
+        self.assertEqual(fn.params[0].type_annotation, SimpleType("String"))
         self.assertEqual(fn.return_type, None)
         self.assertEqual(len(fn.body), 2)
         self.assertIsInstance(fn.body[0], LetStmt)

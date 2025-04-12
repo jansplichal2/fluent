@@ -1,6 +1,6 @@
 from fluent_ast import (
     Number, String, Binary, Var, LetStmt, ExprStmt, FnDecl,
-    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return, Boolean, ListLiteral
+    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return, Boolean, ListLiteral, IndexExpr
 )
 
 
@@ -79,6 +79,15 @@ class Interpreter:
             return env.get(expr.name)
         elif isinstance(expr, ListLiteral):
             return [self.eval_expr(elem, env) for elem in expr.elements]
+        elif isinstance(expr, IndexExpr):
+            target = self.eval_expr(expr.target, env)
+            index = self.eval_expr(expr.index, env)
+            if not isinstance(index, int):
+                raise TypeError(f"List index must be an integer, got {type(index).__name__}")
+            try:
+                return target[index]
+            except (TypeError, IndexError) as e:
+                raise RuntimeError(f"Indexing failed: {e}")
         elif isinstance(expr, Boolean):
             return expr.value
         elif isinstance(expr, Binary):

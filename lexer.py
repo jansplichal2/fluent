@@ -37,8 +37,6 @@ class TokenType(Enum):
     RANGE = auto()
     LPAREN = auto()
     RPAREN = auto()
-    LBRACK = auto()
-    RBRACK = auto()
 
     GT = auto()  # >
     LT = auto()  # <
@@ -55,6 +53,7 @@ class TokenType(Enum):
     NOT = auto()
 
     LBRACKET = auto()
+    RBRACKET = auto()
 
 
 
@@ -195,10 +194,10 @@ class Lexer:
                 self.tokens.append(Token(TokenType.RPAREN, ')', self.line_num, current_col))
                 pos += 1
             elif text[pos] == '[':
-                self.tokens.append(Token(TokenType.LBRACK, '[', self.line_num, current_col))
+                self.tokens.append(Token(TokenType.LBRACKET, '[', self.line_num, current_col))
                 pos += 1
             elif text[pos] == ']':
-                self.tokens.append(Token(TokenType.RBRACK, ']', self.line_num, current_col))
+                self.tokens.append(Token(TokenType.RBRACKET, ']', self.line_num, current_col))
                 pos += 1
             elif text[pos] in ' \t':
                 pos += 1  # skip extra whitespace

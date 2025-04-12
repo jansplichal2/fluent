@@ -1,5 +1,5 @@
 from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, \
-    ExprStmt, Call, IfExpr, MatchExpr, MatchCase, Boolean, ListLiteral
+    ExprStmt, Call, IfExpr, MatchExpr, MatchCase, Boolean, ListLiteral, IndexExpr, ListType, SimpleType
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
@@ -94,9 +94,26 @@ class Parser:
     def parse_let(self):
         self.expect(TokenType.LET)
         name_tok = self.expect(TokenType.IDENT)
+
+        type_annotation = None
+        if self.peek().type == TokenType.COLON:
+            self.advance()
+            type_annotation = self.parse_type()
+
         self.expect(TokenType.ASSIGN)
         value = self.parse_expr()
-        return LetStmt(name=name_tok.value, type_annotation=None, value=value)
+
+        return LetStmt(name=name_tok.value, type_annotation=type_annotation, value=value)
+
+    def parse_type(self):
+        tok = self.expect(TokenType.IDENT)
+        type_name = tok.value
+        if type_name == "List" and self.peek().type == TokenType.LBRACKET:
+            self.advance()  # consume '['
+            element_type = self.parse_type()
+            self.expect(TokenType.RBRACKET)
+            return ListType(element_type=element_type)
+        return SimpleType(name=type_name)
 
     def parse_atom(self):
         tok = self.peek()
@@ -152,6 +169,13 @@ class Parser:
                     left = Call(func=left.name, args=args)
                 else:
                     raise SyntaxError(f"Cannot call non-variable expression at line {tok.line + 1}")
+                continue
+
+            if tok.type == TokenType.LBRACKET:
+                self.advance()
+                index_expr = self.parse_expr()
+                self.expect(TokenType.RBRACKET)
+                left = IndexExpr(target=left, index=index_expr)
                 continue
 
             binary_ops = {
@@ -266,8 +290,8 @@ class Parser:
     def parse_param(self):
         name_tok = self.expect(TokenType.IDENT)
         self.expect(TokenType.COLON)
-        type_tok = self.expect(TokenType.IDENT)
-        return FnParam(name=name_tok.value, type_annotation=type_tok.value)
+        type_annotation = self.parse_type()
+        return FnParam(name=name_tok.value, type_annotation=type_annotation)
 
 
 if __name__ == '__main__':
