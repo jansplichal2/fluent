@@ -1,4 +1,5 @@
-from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, ExprStmt, Call, IfExpr, MatchExpr, MatchCase, Boolean
+from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, \
+    ExprStmt, Call, IfExpr, MatchExpr, MatchCase, Boolean, ListLiteral
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
@@ -104,6 +105,16 @@ class Parser:
             return self.parse_match_expr()
         elif tok.type == TokenType.IF:
             return self.parse_if_expr()
+        elif tok.type == TokenType.LBRACKET:
+            self.advance()
+            elements = []
+            if self.peek().type != TokenType.RBRACKET:
+                elements.append(self.parse_expr())
+                while self.peek().type == TokenType.COMMA:
+                    self.advance()
+                    elements.append(self.parse_expr())
+            self.expect(TokenType.RBRACKET)
+            return ListLiteral(elements)
         elif tok.type == TokenType.LPAREN:
             self.advance()
             expr = self.parse_expr()

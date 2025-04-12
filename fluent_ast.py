@@ -103,3 +103,8 @@ class Return(Stmt):
 @dataclass
 class Boolean(Expr):
     value: bool
+
+
+@dataclass
+class ListLiteral(Expr):
+    elements: list

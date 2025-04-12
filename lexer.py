@@ -54,6 +54,8 @@ class TokenType(Enum):
     OR = auto()
     NOT = auto()
 
+    LBRACKET = auto()
+
 
 
 @dataclass
