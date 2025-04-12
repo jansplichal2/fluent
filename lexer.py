@@ -50,6 +50,10 @@ class TokenType(Enum):
     UNDERSCORE = auto()  # _
     BOOL = auto()
 
+    AND = auto()
+    OR = auto()
+    NOT = auto()
+
 
 
 @dataclass
@@ -143,6 +147,15 @@ class Lexer:
                 value = text[pos + 1:end]
                 self.tokens.append(Token(TokenType.STRING, value, self.line_num, current_col))
                 pos = end + 1
+            elif text.startswith("and", pos) and not text[pos + 3:pos + 4].isalnum():
+                self.tokens.append(Token(TokenType.AND, "and", self.line_num, current_col))
+                pos += 3
+            elif text.startswith("or", pos) and not text[pos + 2:pos + 3].isalnum():
+                self.tokens.append(Token(TokenType.OR, "or", self.line_num, current_col))
+                pos += 2
+            elif text.startswith("not", pos) and not text[pos + 3:pos + 4].isalnum():
+                self.tokens.append(Token(TokenType.NOT, "not", self.line_num, current_col))
+                pos += 3
             elif text[pos:].startswith('->'):
                 self.tokens.append(Token(TokenType.ARROW, '->', self.line_num, current_col))
                 pos += 2

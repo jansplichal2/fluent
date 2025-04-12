@@ -2,16 +2,18 @@ from fluent_ast import LetStmt, Number, String, Var, Binary, FnDecl, FnParam, Ex
 from lexer import Lexer, TokenType, Token
 
 PRECEDENCE = {
-    "==": 0,
-    "!=": 0,
-    ">":  0,
-    "<":  0,
-    ">=": 0,
-    "<=": 0,
-    "+": 1,
-    "-": 1,
-    "*": 2,
-    "/": 2,
+    "or": 1,
+    "and": 2,
+    "==": 3,
+    "!=": 3,
+    "<": 3,
+    ">": 3,
+    "<=": 3,
+    ">=": 3,
+    "+": 4,
+    "-": 4,
+    "*": 5,
+    "/": 5
 }
 
 
@@ -120,7 +122,7 @@ class Parser:
             raise SyntaxError(f"Unsupported expression starting with {tok.type}")
 
     def parse_expr(self, min_precedence=0):
-        left = self.parse_atom()
+        left = self.parse_unary()
 
         while True:
             tok = self.peek()
@@ -152,6 +154,8 @@ class Parser:
                 TokenType.LTE: "<=",
                 TokenType.EQ: "==",
                 TokenType.NEQ: "!=",
+                TokenType.AND: "and",
+                TokenType.OR: "or",
             }
 
             if tok.type in binary_ops:
@@ -166,6 +170,14 @@ class Parser:
                 break
 
         return left
+
+    def parse_unary(self):
+        tok = self.peek()
+        if tok.type == TokenType.NOT:
+            self.advance()
+            operand = self.parse_unary()
+            return Binary(left=Boolean(True), op="and not", right=operand)
+        return self.parse_atom()
 
     def parse_match_expr(self):
         self.expect(TokenType.MATCH)

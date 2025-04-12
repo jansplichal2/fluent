@@ -80,6 +80,35 @@ class Interpreter:
         elif isinstance(expr, Boolean):
             return expr.value
         elif isinstance(expr, Binary):
+            if expr.op == "and":
+                return self.eval_expr(expr.left, env) and self.eval_expr(expr.right, env)
+            elif expr.op == "or":
+                return self.eval_expr(expr.left, env) or self.eval_expr(expr.right, env)
+            elif expr.op == "and not":
+                return self.eval_expr(expr.left, env) and not self.eval_expr(expr.right, env)
+            elif expr.op == "+":
+                return self.eval_expr(expr.left, env) + self.eval_expr(expr.right, env)
+            elif expr.op == "-":
+                return self.eval_expr(expr.left, env) - self.eval_expr(expr.right, env)
+            elif expr.op == "*":
+                return self.eval_expr(expr.left, env) * self.eval_expr(expr.right, env)
+            elif expr.op == "/":
+                return self.eval_expr(expr.left, env) / self.eval_expr(expr.right, env)
+            elif expr.op == ">":
+                return self.eval_expr(expr.left, env) > self.eval_expr(expr.right, env)
+            elif expr.op == "<":
+                return self.eval_expr(expr.left, env) < self.eval_expr(expr.right, env)
+            elif expr.op == ">=":
+                return self.eval_expr(expr.left, env) >= self.eval_expr(expr.right, env)
+            elif expr.op == "<=":
+                return self.eval_expr(expr.left, env) <= self.eval_expr(expr.right, env)
+            elif expr.op == "==":
+                return self.eval_expr(expr.left, env) == self.eval_expr(expr.right, env)
+            elif expr.op == "!=":
+                return self.eval_expr(expr.left, env) != self.eval_expr(expr.right, env)
+            else:
+                raise NotImplementedError(f"Unsupported operator: {expr.op}")
+        elif isinstance(expr, Binary):
             left = self.eval_expr(expr.left, env)
             right = self.eval_expr(expr.right, env)
             return self.apply_op(expr.op, left, right)

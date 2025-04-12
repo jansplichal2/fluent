@@ -26,7 +26,7 @@ This document tracks completed work as we build the Fluent programming language 
 
 ### ✅ AST Layer
 - Core AST nodes defined in `fluent_ast.py`
-- Covers: LetStmt, FnDecl, ExprStmt, Binary, Var, Number, String, MatchExpr, etc.
+- Covers: LetStmt, FnDecl, ExprStmt, Binary, Var, Number, String, MatchExpr, Boolean, etc.
 
 ### ✅ Parser
 - Parses let bindings, literals, binary expressions, calls
@@ -38,7 +38,7 @@ This document tracks completed work as we build the Fluent programming language 
 - Environment model with parent scopes
 - Evaluates:
   - let bindings and variable references
-  - Binary, Var, Number, String
+  - Binary, Var, Number, String, Boolean
   - if expressions with strict boolean enforcement
   - match expressions with wildcard and if branches
 - Pretty printer for visualizing AST structure
@@ -53,23 +53,42 @@ This document tracks completed work as we build the Fluent programming language 
   - Incorrect argument count
 - Full test coverage for function evaluation
 
+### ✅ Built-in Functions
+- `print(...)` and `len(...)` implemented
+- Python-backed call dispatch via `BuiltInFunction`
+- Tested with string inputs and error cases
+
+### ✅ Return Statement Support
+- Introduced `return` as a statement (AST node)
+- Interpreter handles `Return` via internal `ReturnException`
+- Functions now support early exits from conditionals or match arms
+- Implicit return of last expression still works as default
+- Unit tests verify early return and fallback logic
+
+### ✅ Boolean Logic Support
+- Added `true` and `false` literals to the language
+- Introduced `and`, `or`, and `not` operators
+  - Fully integrated into precedence-based parser
+  - Short-circuiting semantics in the interpreter
+- Implemented `Boolean` as a first-class AST node
+- Unit tests for all logical combinations
+
+### 🧠 Planned: Memory Management & Garbage Collection
+- Fluent will adopt automatic memory management
+- Early interpreter will rely on Python's GC
+- Long-term options:
+  - Tracing GC (default, easy to implement)
+  - Reference counting with cycle detection
+  - Ownership model for advanced safety/performance
+- Future milestone will define the runtime memory model formally
+
 ---
 
-
-### ✅ Interpreter (built-in functions)
-- Added support for built-in functions
-  - New `BuiltInFunction` wrapper class
-  - Registered `print(...)` as a built-in
-- Interpreter can now evaluate calls to built-in functions
-- Print evaluated directly to stdout, returns `None`
-- Full test coverage confirming built-in dispatch and behavior
-
 ## 🧭 Next Steps
-- Add built-in functions (e.g. `print`, `length`)
-- Support explicit return values from functions
-- Add Boolean literals and logic operators (`and`, `or`, `not`)
-- Implement type annotations and basic type checking
-- Build REPL and CLI runner
-- Begin packaging and LSP/editor support
+- Add list literals and indexing
+- Type annotations for Booleans and Lists
+- Start REPL interface or script runner
+- Basic type-checking phase
+- Define module system and imports
 
 ---
