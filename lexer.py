@@ -48,6 +48,7 @@ class TokenType(Enum):
     NEQ = auto()  # !=
 
     UNDERSCORE = auto()  # _
+    BOOL = auto()
 
 
 
@@ -208,6 +209,12 @@ class Lexer:
             elif text.startswith("!=", pos):
                 self.tokens.append(Token(TokenType.NEQ, "!=", self.line_num, current_col))
                 pos += 2
+            elif text.startswith("true", pos) and not text[pos + 4:pos + 5].isalnum():
+                self.tokens.append(Token(TokenType.BOOL, "true", self.line_num, current_col))
+                pos += 4
+            elif text.startswith("false", pos) and not text[pos + 5:pos + 6].isalnum():
+                self.tokens.append(Token(TokenType.BOOL, "false", self.line_num, current_col))
+                pos += 5
             else:
                 raise SyntaxError(f"Unexpected character '{text[pos]}' at line {self.line_num + 1}, column {current_col}")
 

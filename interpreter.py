@@ -1,6 +1,6 @@
 from fluent_ast import (
     Number, String, Binary, Var, LetStmt, ExprStmt, FnDecl,
-    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return
+    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return, Boolean
 )
 
 
@@ -77,6 +77,8 @@ class Interpreter:
             return expr.value
         elif isinstance(expr, Var):
             return env.get(expr.name)
+        elif isinstance(expr, Boolean):
+            return expr.value
         elif isinstance(expr, Binary):
             left = self.eval_expr(expr.left, env)
             right = self.eval_expr(expr.right, env)

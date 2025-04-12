@@ -98,3 +98,8 @@ class ExprStmt(Stmt):
 @dataclass
 class Return(Stmt):
     expr: Expr
+
+
+@dataclass
+class Boolean(Expr):
+    value: bool
