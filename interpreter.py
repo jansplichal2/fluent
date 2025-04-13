@@ -1,6 +1,6 @@
 from fluent_ast import (
     Number, String, Binary, Var, LetStmt, ExprStmt, FnDecl,
-    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return, Boolean, ListLiteral, IndexExpr
+    Expr, Stmt, Call, IfExpr, MatchExpr, MatchCase, Return, Boolean, ListLiteral, IndexExpr, SimpleType, ListType
 )
 
 
@@ -57,6 +57,8 @@ class Interpreter:
     def eval_stmt(self, stmt: Stmt, env: Environment):
         if isinstance(stmt, LetStmt):
             value = self.eval_expr(stmt.value, env)
+            if stmt.type_annotation and not check_type(value, stmt.type_annotation):
+                raise TypeError(f"Type mismatch: expected {stmt.type_annotation}, got {type(value).__name__}")
             env.set(stmt.name, value)
             return value
         elif isinstance(stmt, FnDecl):
@@ -119,10 +121,6 @@ class Interpreter:
                 return self.eval_expr(expr.left, env) != self.eval_expr(expr.right, env)
             else:
                 raise NotImplementedError(f"Unsupported operator: {expr.op}")
-        elif isinstance(expr, Binary):
-            left = self.eval_expr(expr.left, env)
-            right = self.eval_expr(expr.right, env)
-            return self.apply_op(expr.op, left, right)
         elif isinstance(expr, IfExpr):
             cond = self.eval_expr(expr.condition, env)
             if not isinstance(cond, bool):
@@ -157,13 +155,22 @@ class Interpreter:
                 if len(expr.args) != len(fn.params):
                     raise ValueError(f"Function '{fn.name}' expects {len(fn.params)} arguments, got {len(expr.args)}")
                 for param, arg in zip(fn.params, args):
+                    if param.type_annotation and not check_type(arg, param.type_annotation):
+                        raise TypeError(
+                            f"Type mismatch in parameter '{param.name}': expected {format_type(param.type_annotation)}, got {type(arg).__name__}")
                     local_env.set(param.name, arg)
                 try:
                     result = None
                     for stmt in fn.body:
                         result = self.eval_stmt(stmt, local_env)
+                    if fn.return_type and not check_type(result, fn.return_type):
+                        raise TypeError(
+                            f"Return type mismatch in function '{fn.name}': expected {format_type(fn.return_type)}, got {type(result).__name__}")
                     return result
                 except ReturnException as re:
+                    if fn.return_type and not check_type(re.value, fn.return_type):
+                        raise TypeError(
+                            f"Return type mismatch in function '{fn.name}': expected {format_type(fn.return_type)}, got {type(re.value).__name__}")
                     return re.value
             elif isinstance(fn, BuiltInFunction):
                 return fn.call(args)
@@ -195,3 +202,28 @@ class Interpreter:
             return left <= right
         else:
             raise ValueError(f"Unknown operator: {op}")
+
+
+def check_type(value, expected_type):
+    if isinstance(expected_type, SimpleType):
+        if expected_type.name == "Int":
+            return isinstance(value, int)
+        elif expected_type.name == "String":
+            return isinstance(value, str)
+        elif expected_type.name == "Bool":
+            return isinstance(value, bool)
+        else:
+            return True  # user-defined or unchecked types
+    elif isinstance(expected_type, ListType):
+        if not isinstance(value, list):
+            return False
+        return all(check_type(elem, expected_type.element_type) for elem in value)
+    return False
+
+
+def format_type(t):
+    if isinstance(t, SimpleType):
+        return t.name
+    if isinstance(t, ListType):
+        return f"List[{format_type(t.element_type)}]"
+    return str(t)

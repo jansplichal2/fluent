@@ -1,5 +1,5 @@
 import unittest
-from fluent_ast import FnDecl, FnParam, Return, ExprStmt, String, IfExpr, Binary, Var, Number, Call
+from fluent_ast import FnDecl, FnParam, Return, ExprStmt, String, IfExpr, Binary, Var, Number, Call, SimpleType
 from interpreter import Interpreter
 
 
@@ -10,8 +10,8 @@ class TestReturnStatement(unittest.TestCase):
     def test_function_returns_early(self):
         fn = FnDecl(
             name="early_exit",
-            params=[FnParam("x", "Int")],
-            return_type="String",
+            params=[FnParam("x", SimpleType("Int"))],
+            return_type=SimpleType("String"),
             body=[
                 ExprStmt(IfExpr(
                     condition=Binary(Var("x"), ">", Number(0)),
@@ -29,8 +29,8 @@ class TestReturnStatement(unittest.TestCase):
     def test_function_returns_fallback(self):
         fn = FnDecl(
             name="early_exit",
-            params=[FnParam("x", "Int")],
-            return_type="String",
+            params=[FnParam("x", SimpleType("Int"))],
+            return_type=SimpleType("String"),
             body=[
                 ExprStmt(
                 IfExpr(
